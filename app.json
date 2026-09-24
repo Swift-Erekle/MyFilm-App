@@ -31,7 +31,6 @@
           "androidTVIcon": "./assets/icon.png"
         }
       ],
-      "./plugins/with-tv-landscape",
       [
         "expo-navigation-bar",
         {

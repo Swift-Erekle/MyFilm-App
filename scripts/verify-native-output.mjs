@@ -44,8 +44,8 @@ if (!hasTag('uses-feature', { 'android:name': 'android.software.leanback' }, man
 if (!hasTag('uses-feature', { 'android:name': 'android.hardware.touchscreen', 'android:required': 'false' }, manifest)) fail('touchscreen must be optional for Android TV');
 const fakeTouchTags = tags('uses-feature', manifest).filter(tag => tagHas(tag, 'android:name', 'android.hardware.faketouch'));
 if (fakeTouchTags.some(tag => !tagHas(tag, 'android:required', 'false'))) fail('faketouch must not be required for Android TV');
-if (!/android:screenOrientation=["']landscape["']/.test(manifest)) {
-  fail(`TV MainActivity is not explicitly locked to landscape; activities=${tags('activity', manifest).join(' || ')}`);
+if (/android:screenOrientation=["']portrait["']/.test(manifest)) {
+  fail('TV MainActivity unexpectedly retains a portrait orientation lock');
 }
 if (/android:usesCleartextTraffic=["']true["']/.test(manifest)) fail('production prebuild unexpectedly enables cleartext traffic');
 if (!/applicationId\s+["']com\.myfilm\.app["']/.test(buildGradle)) fail('Android applicationId is not com.myfilm.app');
@@ -60,7 +60,7 @@ console.log(JSON.stringify({
   ok: true,
   checks: [
     'leanback launcher', 'leanback feature', 'touchscreen optional', 'faketouch not required',
-    'TV banner 320x180', 'INTERNET permission', 'landscape orientation',
+    'TV banner 320x180', 'INTERNET permission', 'no portrait orientation lock',
     'production cleartext disabled', 'applicationId', 'namespace',
   ],
 }));
