@@ -3,7 +3,9 @@
     "name": "MyFilm",
     "slug": "myfilm-app",
     "version": "1.1.0",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -19,6 +21,7 @@
       "versionCode": 4
     },
     "plugins": [
+      "./plugins/with-tv-landscape",
       "./plugins/with-dev-cleartext",
       [
         "@react-native-tvos/config-tv",
