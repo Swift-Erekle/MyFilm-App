@@ -21,8 +21,8 @@ if (!manifest.includes('android.intent.category.LEANBACK_LAUNCHER')) {
 if (!/android:banner=/.test(manifest)) {
   fail('Android TV application banner is missing');
 }
-if (!/android:screenOrientation=["']landscape["']/.test(manifest)) {
-  fail('MainActivity is not locked to landscape');
+if (/android:screenOrientation=["']portrait["']/.test(manifest)) {
+  fail('TV MainActivity unexpectedly retains a phone portrait lock');
 }
 if (/android:usesCleartextTraffic=["']true["']/.test(manifest)) {
   fail('production prebuild unexpectedly enables cleartext traffic');
@@ -39,7 +39,7 @@ console.log(JSON.stringify({
   checks: [
     'leanback launcher',
     'TV banner',
-    'landscape orientation',
+    'phone portrait lock removed',
     'production cleartext disabled',
     'applicationId',
     'namespace',
