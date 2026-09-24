@@ -161,6 +161,13 @@ export default function App() {
     }
 
     if (!message || typeof message.type !== 'string') return;
+    if (message.type === 'MYFILM_NAVIGATION' && typeof message.url === 'string') {
+      try {
+        const nextUrl = new URL(message.url);
+        if (ALLOWED_TOP_LEVEL_ORIGINS.has(nextUrl.origin)) currentUrlRef.current = nextUrl.toString();
+      } catch { /* ignore malformed route reports */ }
+      return;
+    }
     if (message.type === 'MYFILM_FULLSCREEN' && typeof message.active === 'boolean') {
       setFullscreen(message.active);
       applyImmersiveMode();
