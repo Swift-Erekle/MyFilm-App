@@ -31,12 +31,12 @@ The production URL remains:
 ## Validation
 
 ```powershell
-yarn check
-yarn prebuild:check
+yarn run validate:tv
+yarn run prebuild:check
 ```
 
-`yarn check` verifies Expo dependency compatibility and resolves the Expo config.
-`yarn prebuild:check` regenerates the Android TV native project without installing
+`yarn run validate:tv` verifies Expo dependency compatibility and resolves the Expo config.
+`yarn run prebuild:check` regenerates the Android TV native project without installing
 dependencies so config-plugin failures are caught early.
 
 ## Builds

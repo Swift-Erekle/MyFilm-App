@@ -20,5 +20,5 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
       - run: yarn install --frozen-lockfile
-      - run: yarn check
-      - run: yarn prebuild:check
+      - run: yarn run validate:tv
+      - run: yarn run prebuild:check
