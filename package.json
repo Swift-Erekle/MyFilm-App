@@ -1,19 +1,30 @@
 {
   "name": "myfilm-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "index.js",
   "dependencies": {
-    "expo": "~57.0.6",
+    "expo": "~57.0.16",
+    "expo-keep-awake": "~57.0.1",
+    "expo-navigation-bar": "~57.0.2",
+    "expo-screen-orientation": "~57.0.1",
     "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.2",
     "react": "19.2.3",
-    "react-native": "0.86.0",
-    "react-native-webview": "^14.0.1"
+    "react-native": "npm:react-native-tvos@0.86.2-0",
+    "react-native-webview": "13.16.1"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start:tv": "cross-env EXPO_TV=1 expo start --android",
+    "prebuild:tv": "cross-env EXPO_TV=1 expo prebuild --platform android",
+    "android:tv": "cross-env EXPO_TV=1 expo run:android",
+    "build:tv:local": "cross-env EXPO_TV=1 expo prebuild --platform android && cd android && .\\gradlew.bat assembleRelease",
+    "build:tv:preview": "eas build --platform android --profile preview_tv",
+    "build:tv:production": "eas build --platform android --profile production_tv"
   },
+  "devDependencies": {
+    "@react-native-tvos/config-tv": "^0.1.6",
+    "cross-env": "^10.0.0"
+  },
+  "packageManager": "yarn@1.22.22",
   "private": true
 }

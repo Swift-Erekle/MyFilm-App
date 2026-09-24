@@ -1,0 +1,44 @@
+{
+  "cli": {
+    "version": ">= 18.8.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development_tv": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_TV": "1",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://myfilm-production.up.railway.app"
+      },
+      "android": {
+        "image": "latest"
+      }
+    },
+    "preview_tv": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_TV": "1",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://myfilm-production.up.railway.app"
+      },
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      }
+    },
+    "production_tv": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_TV": "1",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://myfilm-production.up.railway.app"
+      },
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      }
+    }
+  },
+  "submit": {
+    "production_tv": {}
+  }
+}

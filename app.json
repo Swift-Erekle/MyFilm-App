@@ -1,24 +1,54 @@
 {
   "expo": {
-    "name": "myfilm-app",
+    "name": "MyFilm",
     "slug": "myfilm-app",
-    "version": "1.0.0",
-    "orientation": "portrait",
+    "version": "1.1.0",
+    "platforms": ["android"],
+    "orientation": "landscape",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0a0a0f",
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0a0a0f",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.myfilm.app",
+      "versionCode": 4
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "plugins": [
+      "./plugins/with-dev-cleartext",
+      [
+        "@react-native-tvos/config-tv",
+        {
+          "isTV": true,
+          "androidTVRequired": true,
+          "androidTVBanner": "./assets/tv-banner.png",
+          "androidTVIcon": "./assets/icon.png"
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false,
+          "hidden": true,
+          "style": "dark"
+        }
+      ],
+      [
+        "expo-status-bar",
+        {
+          "hidden": true,
+          "style": "light"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "043bdee5-c93d-467b-9821-c365dce4a8e9"
+      }
     }
   }
 }
