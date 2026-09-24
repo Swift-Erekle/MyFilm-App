@@ -3,6 +3,8 @@ import {
   ActivityIndicator,
   AppState,
   BackHandler,
+  Linking,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,6 +16,8 @@ import { NavigationBar as SystemNavigationBar } from 'expo-navigation-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
+import appConfig from './app.json';
+import { fetchLatestUpdate } from './src/update.js';
 
 const PRODUCTION_URL = 'https://myfilm-production.up.railway.app';
 const CONFIGURED_URL = process.env.EXPO_PUBLIC_WEB_APP_URL?.trim() || PRODUCTION_URL;
@@ -22,7 +26,9 @@ const ALLOWED_TOP_LEVEL_ORIGINS = new Set([
   new URL(PRODUCTION_URL).origin,
   new URL(CONFIGURED_URL).origin,
 ]);
-const TV_USER_AGENT_SUFFIX = 'MyFilmTV/1.1.0';
+const CURRENT_VERSION = String(appConfig?.expo?.version || '0.0.0');
+const TV_USER_AGENT_SUFFIX = `MyFilmTV/${CURRENT_VERSION}`;
+const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
 const BRIDGE_BOOTSTRAP = `
   (() => {
@@ -82,10 +88,16 @@ export default function App() {
   const webViewRef = useRef(null);
   const exitTimerRef = useRef(null);
   const currentUrlRef = useRef(WEB_APP_URL);
+  const updateAbortRef = useRef(null);
+  const updateCheckInFlightRef = useRef(false);
+  const lastUpdateCheckRef = useRef(0);
+  const dismissedUpdateTagRef = useRef(null);
   const [webViewKey, setWebViewKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [updateActionError, setUpdateActionError] = useState('');
 
   const applyImmersiveMode = useCallback(() => {
     StatusBar.setHidden(true, 'fade');
@@ -105,16 +117,72 @@ export default function App() {
     });
   }, []);
 
+  const checkForUpdate = useCallback(async ({ force = false } = {}) => {
+    const now = Date.now();
+    if (updateCheckInFlightRef.current) return;
+    if (!force && now - lastUpdateCheckRef.current < UPDATE_CHECK_INTERVAL_MS) return;
+
+    updateCheckInFlightRef.current = true;
+    lastUpdateCheckRef.current = now;
+    updateAbortRef.current?.abort?.();
+    const controller = new AbortController();
+    updateAbortRef.current = controller;
+
+    try {
+      const availableUpdate = await fetchLatestUpdate(CURRENT_VERSION, {
+        signal: controller.signal,
+      });
+      if (!availableUpdate) return;
+      if (dismissedUpdateTagRef.current === availableUpdate.tag) return;
+      setUpdateActionError('');
+      setUpdateInfo(availableUpdate);
+    } catch (updateError) {
+      if (updateError?.name !== 'AbortError') {
+        // Update checks are intentionally silent when GitHub or the network is
+        // temporarily unavailable; the next launch/resume will try again.
+      }
+    } finally {
+      if (updateAbortRef.current === controller) updateAbortRef.current = null;
+      updateCheckInFlightRef.current = false;
+    }
+  }, []);
+
+  const dismissUpdate = useCallback(() => {
+    if (updateInfo?.tag) dismissedUpdateTagRef.current = updateInfo.tag;
+    setUpdateActionError('');
+    setUpdateInfo(null);
+    restoreWebFocus();
+  }, [restoreWebFocus, updateInfo]);
+
+  const downloadUpdate = useCallback(async () => {
+    if (!updateInfo?.downloadUrl) return;
+    setUpdateActionError('');
+    try {
+      const supported = await Linking.canOpenURL(updateInfo.downloadUrl);
+      if (!supported) throw new Error('download_url_not_supported');
+      dismissedUpdateTagRef.current = updateInfo.tag;
+      await Linking.openURL(updateInfo.downloadUrl);
+      setUpdateInfo(null);
+    } catch {
+      setUpdateActionError('ჩამოტვირთვის გახსნა ვერ მოხერხდა. სცადე თავიდან.');
+    }
+  }, [updateInfo]);
+
   useEffect(() => {
     applyImmersiveMode();
+    checkForUpdate({ force: true });
     const appStateSubscription = AppState.addEventListener('change', state => {
       if (state === 'active') {
         applyImmersiveMode();
         restoreWebFocus();
+        checkForUpdate();
       }
     });
-    return () => appStateSubscription.remove();
-  }, [applyImmersiveMode, restoreWebFocus]);
+    return () => {
+      updateAbortRef.current?.abort?.();
+      appStateSubscription.remove();
+    };
+  }, [applyImmersiveMode, checkForUpdate, restoreWebFocus]);
 
   useEffect(() => {
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -266,6 +334,46 @@ export default function App() {
           </Pressable>
         </View>
       )}
+
+      <Modal
+        visible={Boolean(updateInfo)}
+        transparent
+        animationType="fade"
+        onRequestClose={dismissUpdate}
+        statusBarTranslucent
+      >
+        <View style={styles.updateBackdrop}>
+          <View style={styles.updateCard}>
+            <Text style={styles.updateEyebrow}>MYFILM განახლება</Text>
+            <Text style={styles.updateTitle}>ახალი ვერსია ხელმისაწვდომია</Text>
+            <Text style={styles.updateVersion}>
+              v{CURRENT_VERSION}  →  v{updateInfo?.version || ''}
+            </Text>
+            <Text style={styles.updateText}>
+              ჩამოტვირთე ახალი APK GitHub Releases-დან და დააყენე მიმდინარე ვერსიის განახლებისთვის.
+            </Text>
+            {updateActionError ? (
+              <Text style={styles.updateError}>{updateActionError}</Text>
+            ) : null}
+            <View style={styles.updateActions}>
+              <Pressable
+                autoFocus
+                hasTVPreferredFocus
+                onPress={downloadUpdate}
+                style={({ focused }) => [styles.updatePrimaryButton, focused && styles.updateButtonFocused]}
+              >
+                <Text style={styles.updatePrimaryText}>განახლების ჩამოტვირთვა</Text>
+              </Pressable>
+              <Pressable
+                onPress={dismissUpdate}
+                style={({ focused }) => [styles.updateSecondaryButton, focused && styles.updateButtonFocused]}
+              >
+                <Text style={styles.updateSecondaryText}>მოგვიანებით</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -320,6 +428,88 @@ const styles = StyleSheet.create({
   retryText: {
     color: '#ffffff',
     fontSize: 20,
+    fontWeight: '800',
+  },
+  updateBackdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 56,
+    backgroundColor: 'rgba(0, 0, 0, 0.78)',
+  },
+  updateCard: {
+    width: '100%',
+    maxWidth: 760,
+    paddingHorizontal: 44,
+    paddingVertical: 38,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2a2a34',
+    backgroundColor: '#111117',
+  },
+  updateEyebrow: {
+    color: '#ef1423',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+  },
+  updateTitle: {
+    marginTop: 8,
+    color: '#ffffff',
+    fontSize: 34,
+    fontWeight: '900',
+  },
+  updateVersion: {
+    marginTop: 14,
+    color: '#f0f0f3',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  updateText: {
+    marginTop: 16,
+    color: '#b7b7c0',
+    fontSize: 19,
+    lineHeight: 29,
+  },
+  updateError: {
+    marginTop: 14,
+    color: '#ff7a84',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  updateActions: {
+    flexDirection: 'row',
+    gap: 18,
+    marginTop: 30,
+  },
+  updatePrimaryButton: {
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: 'transparent',
+    backgroundColor: '#ef1423',
+  },
+  updateSecondaryButton: {
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: '#3a3a45',
+    backgroundColor: '#1b1b22',
+  },
+  updateButtonFocused: {
+    borderColor: '#ffffff',
+    transform: [{ scale: 1.06 }],
+  },
+  updatePrimaryText: {
+    color: '#ffffff',
+    fontSize: 19,
+    fontWeight: '900',
+  },
+  updateSecondaryText: {
+    color: '#ffffff',
+    fontSize: 19,
     fontWeight: '800',
   },
 });

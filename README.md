@@ -68,3 +68,16 @@ was verified. Future TV releases should be published only from `MyFilm-App`.
 - Back exits the app only from the web application's root.
 - Playback/provider logic remains in the shared website, so provider fixes apply
   to both the PWA and Android TV shell.
+
+
+## In-app update check
+
+On every cold start, and periodically when the TV app returns to the foreground,
+the native shell checks the latest public release of `Swift-Erekle/MyFilm-App`.
+If the latest stable release tag is newer than the installed `expo.version`
+and contains an APK asset, a TV-friendly update dialog is shown. The primary
+button opens that release asset for download.
+
+For updates to be detected correctly, each published APK must use a newer
+semantic version in both `app.json` / `package.json` and its GitHub release
+tag. Example: installed `1.1.0` -> publish `v1.1.1`.

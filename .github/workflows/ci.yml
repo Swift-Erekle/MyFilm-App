@@ -25,6 +25,8 @@ jobs:
           java-version: '17'
       - run: yarn install --frozen-lockfile
       - run: yarn run validate:tv
+      - name: Verify GitHub release update checker
+        run: node scripts/verify-update-check.mjs
       - run: yarn run prebuild:check
       - run: node scripts/verify-native-output.mjs
       - uses: actions/checkout@v5
