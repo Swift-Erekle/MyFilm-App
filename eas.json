@@ -4,17 +4,6 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "development_tv": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_TV": "1",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://myfilm-production.up.railway.app"
-      },
-      "android": {
-        "image": "latest"
-      }
-    },
     "preview_tv": {
       "distribution": "internal",
       "env": {

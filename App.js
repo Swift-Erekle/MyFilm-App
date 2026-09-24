@@ -64,6 +64,18 @@ function isAllowedTopLevelRequest(request) {
   }
 }
 
+function isCurrentTopLevelUrl(url, currentUrl) {
+  try {
+    const candidate = new URL(url);
+    const current = new URL(currentUrl);
+    return candidate.origin === current.origin
+      && candidate.pathname === current.pathname
+      && candidate.search === current.search;
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
   useKeepAwake('myfilm-tv');
 
@@ -163,6 +175,9 @@ export default function App() {
   }, [applyImmersiveMode, restoreWebFocus]);
 
   const retry = useCallback(() => {
+    clearTimeout(exitTimerRef.current);
+    currentUrlRef.current = WEB_APP_URL;
+    setFullscreen(false);
     setError(null);
     setLoading(true);
     setWebViewKey(key => key + 1);
@@ -209,16 +224,18 @@ export default function App() {
           restoreWebFocus();
         }}
         onError={event => {
+          if (!isCurrentTopLevelUrl(event.nativeEvent.url, currentUrlRef.current)) return;
           setLoading(false);
           setError(event.nativeEvent.description || 'გვერდი ვერ ჩაიტვირთა');
         }}
         onHttpError={event => {
-          if (event.nativeEvent.statusCode >= 400) {
+          if (event.nativeEvent.statusCode >= 400
+            && isCurrentTopLevelUrl(event.nativeEvent.url, currentUrlRef.current)) {
             setLoading(false);
             setError(`სერვერის შეცდომა: ${event.nativeEvent.statusCode}`);
           }
         }}
-        onContentProcessDidTerminate={retry}
+        onRenderProcessGone={retry}
       />
 
       {loading && !error && (

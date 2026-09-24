@@ -1,7 +1,11 @@
 {
   "name": "myfilm-app",
   "version": "1.1.0",
+  "private": true,
   "main": "index.js",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "dependencies": {
     "expo": "~57.0.16",
     "expo-keep-awake": "~57.0.1",
@@ -13,18 +17,26 @@
     "react-native": "npm:react-native-tvos@0.86.2-0",
     "react-native-webview": "13.16.1"
   },
-  "scripts": {
-    "start:tv": "cross-env EXPO_TV=1 expo start --android",
-    "prebuild:tv": "cross-env EXPO_TV=1 expo prebuild --platform android",
-    "android:tv": "cross-env EXPO_TV=1 expo run:android",
-    "build:tv:local": "cross-env EXPO_TV=1 expo prebuild --platform android && cd android && .\\gradlew.bat assembleRelease",
-    "build:tv:preview": "eas build --platform android --profile preview_tv",
-    "build:tv:production": "eas build --platform android --profile production_tv"
-  },
   "devDependencies": {
     "@react-native-tvos/config-tv": "^0.1.6",
     "cross-env": "^10.0.0"
   },
-  "packageManager": "yarn@1.22.22",
-  "private": true
+  "scripts": {
+    "check": "cross-env EXPO_TV=1 expo install --check && cross-env EXPO_TV=1 expo config --type public",
+    "start:tv": "cross-env EXPO_TV=1 expo run:android",
+    "prebuild:tv": "cross-env EXPO_TV=1 expo prebuild --platform android --clean",
+    "prebuild:check": "cross-env EXPO_TV=1 expo prebuild --platform android --clean --no-install",
+    "android:tv": "cross-env EXPO_TV=1 expo run:android",
+    "build:tv:local": "cross-env EXPO_TV=1 expo prebuild --platform android --clean && cd android && .\\gradlew.bat assembleRelease",
+    "build:tv:preview": "eas build --platform android --profile preview_tv",
+    "build:tv:production": "eas build --platform android --profile production_tv"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react-native"
+      ]
+    }
+  },
+  "packageManager": "yarn@1.22.22"
 }

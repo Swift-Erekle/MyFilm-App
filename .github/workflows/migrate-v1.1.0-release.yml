@@ -1,0 +1,34 @@
+name: Migrate TV v1.1.0 release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/migrate-v1.1.0-release.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Copy verified v1.1.0 APK into MyFilm-App releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED_SHA256: 64264b24e7eac05121d49e701190bb10a098aa3f588db0785a3a9c7574beb0bb
+          LEGACY_APK_URL: https://github.com/Swift-Erekle/MyFilm/releases/download/v1.1.0/MyFilm-TV.apk
+        run: |
+          set -euo pipefail
+          if gh release view v1.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "v1.1.0 already exists in $GITHUB_REPOSITORY"
+            exit 0
+          fi
+          curl --fail --location --retry 3 --output MyFilm-TV.apk "$LEGACY_APK_URL"
+          echo "$EXPECTED_SHA256  MyFilm-TV.apk" | sha256sum --check -
+          gh release create v1.1.0 "MyFilm-TV.apk#MyFilm-TV.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "MyFilm TV v1.1.0" \
+            --notes-file RELEASE-1.1.0.md
