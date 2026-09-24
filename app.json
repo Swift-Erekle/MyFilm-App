@@ -21,7 +21,6 @@
       "versionCode": 4
     },
     "plugins": [
-      "./plugins/with-tv-landscape",
       "./plugins/with-dev-cleartext",
       [
         "@react-native-tvos/config-tv",
@@ -32,6 +31,7 @@
           "androidTVIcon": "./assets/icon.png"
         }
       ],
+      "./plugins/with-tv-landscape",
       [
         "expo-navigation-bar",
         {
