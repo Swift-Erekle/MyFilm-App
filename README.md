@@ -56,9 +56,8 @@ The public TV release belongs to this repository:
 
 `https://github.com/Swift-Erekle/MyFilm-App/releases/download/v1.1.0/MyFilm-TV.apk`
 
-The v1.1.0 migration workflow copies the already tested APK from the legacy
-`MyFilm` release and verifies SHA-256 before publishing it here. Future TV
-releases should be published only from `MyFilm-App`.
+The v1.1.0 APK was migrated from the legacy `MyFilm` release after its SHA-256
+was verified. Future TV releases should be published only from `MyFilm-App`.
 
 ## TV controls
 
