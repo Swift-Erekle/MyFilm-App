@@ -1,0 +1,36 @@
+name: Refresh Expo SDK 57 lockfile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/refresh-sdk57-lockfile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.13
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - name: Resolve updated Expo SDK 57 dependencies
+        run: yarn install
+      - name: Commit refreshed lockfile
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- yarn.lock; then
+            echo "yarn.lock is already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add yarn.lock
+          git commit -m "Refresh Expo SDK 57 lockfile"
+          git push
