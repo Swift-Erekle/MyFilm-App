@@ -17,7 +17,7 @@ for (const message of requiredMessages) {
   if (!platformSource.includes(message)) throw new Error(`website platform bridge does not emit ${message}`);
 }
 
-for (const token of ['MyFilmTV/1.1.0', 'onRenderProcessGone={retry}', 'mixedContentMode="never"', 'setSupportMultipleWindows={false}']) {
+for (const token of ['TV_USER_AGENT_SUFFIX', 'CURRENT_VERSION', 'onRenderProcessGone={retry}', 'mixedContentMode="never"', 'setSupportMultipleWindows={false}']) {
   if (!appSource.includes(token)) throw new Error(`App.js contract missing: ${token}`);
 }
 if (!tvNavigationSource.includes('MyFilmTV')) throw new Error('TV navigation does not recognize the native TV user agent');
