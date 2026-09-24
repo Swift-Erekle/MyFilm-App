@@ -36,3 +36,5 @@ jobs:
       - name: Compile Android TV release
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
+      - name: Verify compiled Android TV APK
+        run: node scripts/verify-apk.mjs
