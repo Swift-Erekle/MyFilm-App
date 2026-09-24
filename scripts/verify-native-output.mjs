@@ -44,7 +44,9 @@ if (!hasTag('uses-feature', { 'android:name': 'android.software.leanback' }, man
 if (!hasTag('uses-feature', { 'android:name': 'android.hardware.touchscreen', 'android:required': 'false' }, manifest)) fail('touchscreen must be optional for Android TV');
 const fakeTouchTags = tags('uses-feature', manifest).filter(tag => tagHas(tag, 'android:name', 'android.hardware.faketouch'));
 if (fakeTouchTags.some(tag => !tagHas(tag, 'android:required', 'false'))) fail('faketouch must not be required for Android TV');
-if (!/android:screenOrientation=["']landscape["']/.test(manifest)) fail('TV MainActivity is not explicitly locked to landscape');
+if (!/android:screenOrientation=["']landscape["']/.test(manifest)) {
+  fail(`TV MainActivity is not explicitly locked to landscape; activities=${tags('activity', manifest).join(' || ')}`);
+}
 if (/android:usesCleartextTraffic=["']true["']/.test(manifest)) fail('production prebuild unexpectedly enables cleartext traffic');
 if (!/applicationId\s+["']com\.myfilm\.app["']/.test(buildGradle)) fail('Android applicationId is not com.myfilm.app');
 if (!/namespace\s+["']com\.myfilm\.app["']/.test(buildGradle)) fail('Android namespace is not com.myfilm.app');
