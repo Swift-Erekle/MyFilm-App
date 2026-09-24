@@ -11,7 +11,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -19,6 +19,20 @@ jobs:
           node-version: 22.13
           cache: yarn
           cache-dependency-path: yarn.lock
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - run: yarn install --frozen-lockfile
       - run: yarn run validate:tv
       - run: yarn run prebuild:check
+      - run: node scripts/verify-native-output.mjs
+      - uses: actions/checkout@v5
+        with:
+          repository: Swift-Erekle/MyFilm
+          ref: main
+          path: integration-site
+      - run: node scripts/verify-bridge-contract.mjs integration-site
+      - name: Compile Android TV release
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
